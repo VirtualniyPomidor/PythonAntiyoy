@@ -30,7 +30,7 @@ class Players:
         self.state = state
         self.money = money
 
-    def count(self):
+    def salary(self):
         for cell in self.field:
             if cell.state == self.state:
                 if cell.object == 'house':
@@ -44,6 +44,11 @@ class Players:
                 if cell.object == 'lord':
                     self.money -= 18
 
+        if self.money < 0:
+            for cell in self.field:
+                if cell.object in moving_objects:
+                    cell.change_object('')
+
     def move(self, cell, dest):
         available_move_flag = True
         if (self.field[cell].object in moving_objects) and cell != dest and self.field[cell].state == self.state and \
@@ -53,14 +58,14 @@ class Players:
                     if self.field[dest].object == 'lord' or (
                             self.field[dest].object == 'knight' and self.field[cell].object in ['knight', 'lord']) or (
                             self.field[dest].object == 'peasant' and self.field[cell].object == 'lord'):
-                        print(
-                            f'No moves from point {cell} to {dest} as player with state {['red', 'blue'][self.state - 1]} #1')
+                        # print(
+                        #     f'No moves from point {cell} to {dest} as player with state {['red', 'blue'][self.state - 1]} #1')
                         available_move_flag = False
                     else:
                         self.field[dest].change_object(self.field[cell].object)
                 else:
-                    print(
-                        f'No moves from point {cell} to {dest} as player with state {['red', 'blue'][self.state - 1]} #2')
+                    # print(
+                    #     f'No moves from point {cell} to {dest} as player with state {['red', 'blue'][self.state - 1]} #2')
                     available_move_flag = False
             else:
                 self.field[dest].object = self.field[cell].object
@@ -72,9 +77,9 @@ class Players:
                 self.field[dest].change_object('block1')
                 self.field[dest].change()
                 self.field[cell].change()
-        else:
-            print(
-                f'No moves from point {cell} to {dest} as player with state {['red', 'blue'][self.state - 1]} #3')
+        # else:
+            # print(
+                # f'No moves from point {cell} to {dest} as player with state {['red', 'blue'][self.state - 1]} #3')
 
             # print(self.field[cell].object in moving_objects, cell != dest, self.field[
             #     cell].state == self.state, dest in dfs_moves(self.field, cell), self.field[cell].blocked != 1)
@@ -179,7 +184,7 @@ class GameProcess:
                     choice_object = choice(
                         ['peasant', 'knight', 'house', 'tower', 'lord'])
                     player.build(choice_object, cell.id)
-                    print('BUILD', cell.state, cell.id, choice_object)
+                    # print('BUILD', cell.state, cell.id, choice_object)
                 elif cell.object in moving_objects:
                     moves_list = list(dfs_moves(self.field, cell.id))
                     list_to_move = []
@@ -191,15 +196,15 @@ class GameProcess:
                     choice_move = choice(list_to_move)
                     # print(cell.id, list_to_move)
                     player.move(cell.id, choice_move)
-                    print('MOVE', cell.state, cell.id, choice_move)
+                    # print('MOVE', cell.state, cell.id, choice_move)
                     count = 1
                     break
             if count:
                 break
+        # print(player.money)
 
     def game(self):
         for cell in self.field:
-            # self.field = tree_spreading(self.field)
             cell.reset()
         pg.display.update()
 
@@ -215,10 +220,12 @@ class GameProcess:
                     i.change_object('block0')
                 for i in range(len(self.players)):
                     self.players[i] = Players(self.field, i + 1, self.players[i].money)
-                    self.players[i].count()
+                    self.players[i].salary()
                 for cell in self.field:
                     cell.reset()
-
+            self.field = tree_spreading(self.field)
+            for cell in self.field:
+                cell.reset()
     def main(self, time, delay):
         self.game()
         if delay == 0:
@@ -367,20 +374,20 @@ def dot_init(i):
                               field[i][1], field[i][2], state_colors, friends, i, defense, blocked)
 
 
-# что такое dot? нужно исправить
-# def tree_spreading(dots):
-#     j = randint(1, 4)
-#     dots_copy = copy.deepcopy(dots)
-#     if j != 1:
-#         return dots_copy
-#     if dot.object == 'tree':
-#         k = randint(1, 4)
-#         if k == 1:
-#             f = sample(dot.friends, k)
-#             for cell in f:
-#                 if cell and dots_copy[cell].land != 0:
-#                     dots_copy[cell].change_object('tree')
-#     return dots_copy
+def tree_spreading(dots):
+    j = randint(1, 5)
+    dots_copy = copy.deepcopy(dots)
+    if j != 1:
+        return dots_copy
+    else:
+        for dot in dots:
+            if dot.object == 'tree':
+                k = randint(1, 5)
+                if k == 1:
+                    cell = choice(dot.friends)
+                    if cell and dots_copy[cell].land != 0:
+                        dots_copy[cell].change_object('tree')
+        return dots_copy
 
 
 class GameSprite:
@@ -486,6 +493,8 @@ class GameSprite:
                 self.object = object
                 if object == 'tower':
                     self.defense = 2
+            if object == '':
+                self.object = object
         else:
             if self.object == '' or self.object == 'tree':
                 self.object = object
