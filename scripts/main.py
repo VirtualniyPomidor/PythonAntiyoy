@@ -215,7 +215,8 @@ class Players:
                                     f" for building {obj} or another problem occurred")
                     elif obj == 'knight':
                         if (self.money[flag] >= 20 and changed and self.dots[cell].defense <= 1) or \
-                                (self.money[flag] >= 20 and not changed and self.dots[cell].obj in free_to_step_objects):
+                                (self.money[flag] >= 20 and not changed and
+                                 self.dots[cell].obj in free_to_step_objects):
                             change_back = False
                             if block == 1:
                                 self.dots[cell].change_object('block1')
