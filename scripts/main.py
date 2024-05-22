@@ -1,4 +1,5 @@
 import copy
+import sys
 from random import choice, randint
 from time import time
 import pygame_gui
@@ -12,7 +13,6 @@ import config
 FPS = config.FPS
 delay = config.delay
 
-field = config.field
 music_volume = config.music_volume
 theme = config.theme
 
@@ -23,6 +23,7 @@ pause_flag = config.pause_flag
 stress_test_flag = config.stress_test_flag
 logs_flag = config.logs_flag
 color_cor_flag = config.color_cor_flag
+win_screen_delay = config.win_screen_delay
 
 WIN_WIDTH = config.WIN_WIDTH
 WIN_HEIGHT = config.WIN_HEIGHT
@@ -320,6 +321,7 @@ class GameProcess:
         self.winner = None
         self.players_area = dict()
         self.logs_deployed = False
+        self.win_screen_timer = 0
 
     def bot(self, player):
         for cell in self.dots:
@@ -540,7 +542,7 @@ class GameProcess:
                     self.logs_deployed = True
                     print(f"State {['red', 'blue'][self.winner.state - 1]} wins due to the capture of most territories")
 
-    def game(self):
+    def game(self, timer):
         for cell in self.dots:
             cell.reset()
         window.blit(game_window, (0, 0))
@@ -548,6 +550,10 @@ class GameProcess:
             window.blit(color_cor, (0, 0))
         if self.win_flag:
             win_screen(self.winner)
+            if self.win_screen_timer == 0:
+                self.win_screen_timer = timer
+            if timer - self.win_screen_timer > win_screen_delay:
+                game_init()
         pg.display.update()
 
     def bots(self):
@@ -590,7 +596,7 @@ class GameProcess:
                 cell.reset()
 
     def main(self, timer, delay_time):
-        self.game()
+        self.game(timer)
         if not self.win_flag and self.changes_timer < 10:
             if delay_time == 0:
                 self.bots()
@@ -735,7 +741,7 @@ class GameSprite:
         return defense
 
 
-def dot_init(i):
+def dot_init(i, field):
     left = [0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144]
     right = [11, 23, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155]
     up = [6, 7, 8, 9, 10, 11]
@@ -831,10 +837,10 @@ def dot_init(i):
                               x_cord, y_cord, land, state, obj, state_colors, friends, i, defense, blocked)
 
 
-def dots_init():
+def dots_init(field):
     dots = []
     for i in range(156):
-        dot = dot_init(i)
+        dot = dot_init(i, field)
         dots.append(dot)
     return dots
 
@@ -1021,7 +1027,7 @@ def music_pause(e, button):
 
 def button_manager():
     manager = pygame_gui.UIManager((WIN_WIDTH, WIN_HEIGHT))
-    if music_flag:
+    if pg.mixer.music.get_busy():
         mb_text = 'Music OFF'
     else:
         mb_text = 'Music ON'
@@ -1084,9 +1090,7 @@ def state_counter(dots, players):
     return players_area
 
 
-def game_init():
-    manager, music_button, digits_button, game_pause_button, freezer_button = button_manager()
-
+def music_init():
     pg.mixer.music.load(tracks[randint(0, len(tracks) - 1)])
     pg.mixer.music.set_volume(0)
     pg.mixer.music.play(-1)
@@ -1094,8 +1098,18 @@ def game_init():
         pg.mixer.music.pause()
     pg.mixer.music.set_volume(music_volume)
 
+
+music_init()
+
+
+def game_init():
+
+    manager, music_button, digits_button, game_pause_button, freezer_button = button_manager()
+
+    field = config.Fields.fields[randint(0, 4)]
+
     # player1 - красный, player2 - синий
-    dots = set_defense(dots_init())
+    dots = set_defense(dots_init(field))
     player1 = Players(dots, 1)
     player1.group_count()
     player1.start_money()
@@ -1109,13 +1123,11 @@ def game_init():
     starting_timer = time()
     # show(dots, 145, 'borders')  # Визуализация работы DFS для нахождения возможных ходов для 130 клетки
 
-    game = True
-
-    while game:
+    while True:
         time_delta = clock.tick(FPS) / 1000
         for e in pg.event.get():
             if e.type == pg.QUIT:
-                game = False
+                sys.exit()
             music_pause(e, music_button)
             game_pause(e, game_pause_button)
             digits_show(e, digits_button)
@@ -1136,6 +1148,7 @@ def game_init():
 
         ending_timer = time()
         timer = ending_timer - starting_timer
+        # print(timer)
         gp.main(timer, delay)  # delay = 0 без ограничений, delay > 0 — задержка между ходами в секундах
 
         pg.display.update()
