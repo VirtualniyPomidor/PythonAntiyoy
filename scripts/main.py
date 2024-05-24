@@ -569,11 +569,11 @@ class GameProcess:
                 self.players[i].group_count()
 
             for player in self.players:
-                # if player.state == 2:
-                #     self.adaptive_bot(player)
-                # elif player.state == 1:
-                #     self.bot(player)
-                self.adaptive_bot(player)
+                if player.state == 2:
+                    self.adaptive_bot(player)
+                elif player.state == 1:
+                    self.bot(player)
+                # self.bot(player)
                 self.dots = set_defense(self.dots)
                 for i in player.dots:
                     i.change_object('block0')
@@ -597,7 +597,7 @@ class GameProcess:
 
     def main(self, timer, delay_time):
         self.game(timer)
-        if not self.win_flag and self.changes_timer < 10:
+        if not self.win_flag and self.changes_timer < 20:
             if delay_time == 0:
                 self.bots()
             else:
@@ -607,11 +607,13 @@ class GameProcess:
 
         else:
             self.win_flag = True
-            players_dict = state_counter(self.dots, self.players)
-            self.winner = self.players[max(players_dict, key=players_dict.get) - 1]
+            # players_dict = state_counter(self.dots, self.players)
+            # self.winner = self.players[max(players_dict, key=players_dict.get) - 1]
+            if not self.winner:
+                self.winner = 'tie'
             if logs_flag and not self.logs_deployed:
                 self.logs_deployed = True
-                print(f"State {['red', 'blue'][self.winner.state - 1]} wins due to passivity of all states")
+                print(f"The game ends in a draw due to the passivity of all countries")
 
 
 class GameSprite:
@@ -1026,7 +1028,11 @@ def music_pause(e, button):
 
 
 def button_manager():
-    manager = pygame_gui.UIManager((WIN_WIDTH, WIN_HEIGHT))
+    manager = pygame_gui.UIManager((WIN_WIDTH, WIN_HEIGHT), '../content/theme.json',
+                                   translation_directory_paths=['../content/fonts'])
+    # button_example = pygame_gui.elements.UIButton(relative_rect=pg.Rect((0, 0), (0, 0)), text='', manager=manager)
+    # button_example.colours['normal_bg'][0:3] = main_color
+    # button_example.colours['hovered_bg'][0:3] = (30, 31, 45)
     if pg.mixer.music.get_busy():
         mb_text = 'Music OFF'
     else:
@@ -1064,12 +1070,18 @@ def win_screen(winner):
 
     text_shadow = f2.render('GAME OVER', False, (0, 0, 0))
     place_shadow = text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 3))
+    if winner != 'tie':
+        info_text = f3.render(f'Player #{winner.state} wins', False, state_accent_colors[winner.state - 1])
+        place_info = info_text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 100))
 
-    info_text = f3.render(f'Player #{winner.state} wins', False, state_accent_colors[winner.state - 1])
-    place_info = info_text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 100))
+        info_shadow = f3.render(f'Player #{winner.state} wins', False, (0, 0, 0))
+        place_shadow_info = info_text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 103))
+    else:
+        info_text = f4.render('The game ends in a draw', False, (122, 122, 42))
+        place_info = info_text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 100))
 
-    info_shadow = f3.render(f'Player #{winner.state} wins', False, (0, 0, 0))
-    place_shadow_info = info_text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 103))
+        info_shadow = f4.render('The game ends in a draw', False, (0, 0, 0))
+        place_shadow_info = info_text.get_rect(center=(WIN_WIDTH // 2, (WIN_HEIGHT - 200) // 2 + 103))
 
     end_window.fill((0, 0, 0))
     end_window.set_alpha(200)
@@ -1103,7 +1115,6 @@ music_init()
 
 
 def game_init():
-
     manager, music_button, digits_button, game_pause_button, freezer_button = button_manager()
 
     field = config.Fields.fields[randint(0, 4)]
