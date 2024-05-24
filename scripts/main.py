@@ -569,11 +569,11 @@ class GameProcess:
                 self.players[i].group_count()
 
             for player in self.players:
-                if player.state == 2:
-                    self.adaptive_bot(player)
-                elif player.state == 1:
-                    self.bot(player)
-                # self.bot(player)
+                # if player.state == 2:
+                #     self.adaptive_bot(player)
+                # elif player.state == 1:
+                #     self.bot(player)
+                self.adaptive_bot(player)
                 self.dots = set_defense(self.dots)
                 for i in player.dots:
                     i.change_object('block0')

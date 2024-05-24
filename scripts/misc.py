@@ -50,10 +50,15 @@ flag_shadow_image = pg.transform.scale(pg.image.load('../content/sprites_dark/sh
 flag_shadow_image.set_alpha(70)
 
 pg.font.init()
-f1 = pg.font.Font('../content/fonts/arial_black.ttf', 18)
-f2 = pg.font.Font('../content/fonts/terminal_bold.ttf', 82)
-f3 = pg.font.Font('../content/fonts/terminal_bold.ttf', 42)
-f4 = pg.font.Font('../content/fonts/terminal_bold.ttf', 32)
+# f1 = pg.font.Font('../content/fonts/arial_black.ttf', 18)
+# f2 = pg.font.Font('../content/fonts/terminal_bold.ttf', 82)
+# f3 = pg.font.Font('../content/fonts/terminal_bold.ttf', 42)
+# f4 = pg.font.Font('../content/fonts/terminal_bold.ttf', 32)
+
+f1 = pg.font.Font('../content/fonts/silver.ttf', 36)
+f2 = pg.font.Font('../content/fonts/silver.ttf', 162)
+f3 = pg.font.Font('../content/fonts/silver.ttf', 85)
+f4 = pg.font.Font('../content/fonts/silver.ttf', 70)
 
 tracks = []
 for track in os.listdir('../content/music'):
