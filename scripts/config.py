@@ -2,7 +2,7 @@ from fields import Fields
 from random import randint
 
 FPS = 0
-delay = 0.5  # Задержка между ходами в секундах
+delay = 1 # Задержка между ходами в секундах
 win_screen_delay = 2  # Задержка для экрана победы
 
 field = Fields.fields[randint(0, 4)]  # 0 - Стандартное поле, 1 - карта №1, 2 - пустое поле, 3 - карта №2
